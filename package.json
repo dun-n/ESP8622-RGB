@@ -1,0 +1,15 @@
+{
+  "name": "esp8266-rgb",
+  "version": "1.0.0",
+  "description": "an ESP8366 based RGB LED controller",
+  "scripts": {
+    "dev": "node DevServer.js"
+  },
+  "private": true,
+  "devDependencies": {
+    "express": "^4.18.1"
+  },
+  "dependencies": {
+    "@jaames/iro": "^5.5.2"
+  }
+}
