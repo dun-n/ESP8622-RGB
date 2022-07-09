@@ -564,7 +564,12 @@ void setupAccessPoint(){
     Serial.println(appassword);
     Serial.print("IP address:\t");
     Serial.println(WiFi.softAPIP());         // Send the IP address of the ESP8266 to the computer
-    
+    Serial.println("Connect to the access point above just as you would to your wifi router.");
+    Serial.println("(This probably won't work on your phone)");
+    Serial.print("Type 'http://");
+    Serial.print(WiFi.softAPIP());
+    Serial.println("' into the URL bar on your web browser.");
+    Serial.println("Fill out the form to connect to you Wifi.");
     while(connecting){
       mainUpdate();
       // blink blue
