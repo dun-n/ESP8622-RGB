@@ -1,4 +1,5 @@
 #include "Webpage.h"
+#include "Secrets.h"
 
 boolean connecting = false;
 
@@ -11,9 +12,9 @@ void handle_root() {
     server.sendHeader("Content-Encoding", "gzip");
     server.send_P(200, "text/html", HTML_CONNECT,len);  
   } else {
-    long len = sizeof(HTML_MAIN);
+    long len = sizeof(HTML_PRESETS);
     server.sendHeader("Content-Encoding", "gzip");
-    server.send_P(200, "text/html", HTML_MAIN ,len); 
+    server.send_P(200, "text/html", HTML_PRESETS ,len); 
   }
 }
 
@@ -48,7 +49,8 @@ void rest_color() {
       server.send(400, "plain/text","Bad JSON String");
       return;
     }
-   
+    staticData.RGBmode = -1;
+    staticData.currentPaletteNumber = -1;
     if(input.containsKey("r")){
       r = input["r"];
     }
@@ -166,22 +168,25 @@ void rest_mode(){
       return;
     }
 
-    RGBmode = input["mode"];
-    duration = input["duration"];
-    currentPaletteNumber = input["palette"];
-    colorIndex = 0;
-    Palette* pal = &staticData.palettes[currentPaletteNumber];
-    currentPalette.numberOfColors = pal -> numberOfColors;
-    for(uint16_t j = 0; j < pal->numberOfColors && j < MAX_COLORS; j++){
-      Color3B color = pal->colors[j];
-      Color3B* curColor = &currentPalette.colors[j];
-      curColor->red = color.red;
-      curColor->green = color.green;
-      curColor->blue = color.blue;
+    if(input.containsKey("off")){
+      staticData.RGBmode = -1;
+      staticData.currentPaletteNumber = -1;
+      setColor(0,0,0);
+    } else if(input.containsKey("mode")){
+      staticData.RGBmode = input["mode"];
+      if(input.containsKey("duration")){
+        staticData.duration = input["duration"];
+      }
+      if(input.containsKey("palette")){
+        staticData.currentPaletteNumber = input["palette"];
+      }
     }
+    writeEEPROM();
     initMode();
-    //writeEEPROM();
   }
+  doc["mode"] = staticData.RGBmode;
+  doc["duration"] = staticData.duration;
+  doc["palette"] = staticData.currentPaletteNumber;
   serializeJson(doc, output, 1024);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -313,16 +318,16 @@ void handle_settings(){
 }
 
 
-void handle_presets(){
-  long len = sizeof(HTML_PRESETS);
+void handle_wheel(){
+  long len = sizeof(HTML_WHEEL);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.sendHeader("Content-Encoding", "gzip");
-  server.send_P(200, "text/html", HTML_PRESETS ,len);
+  server.send_P(200, "text/html", HTML_WHEEL ,len);
   yield(); 
 }
 
-void handle_iro(){
+void handle_iro_js(){
   long len = sizeof(JS_IRO);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -331,7 +336,7 @@ void handle_iro(){
   yield(); 
 }
 
-void handle_env(){
+void handle_env_js(){
   long len = sizeof(JS_ENV);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -340,7 +345,7 @@ void handle_env(){
   yield(); 
 }
 
-void handle_ee3(){
+void handle_ee3_js(){
   long len = sizeof(JS_EE3);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -349,12 +354,39 @@ void handle_ee3(){
   yield();
 }
 
-void handle_main_js(){
-  long len = sizeof(JS_MAIN);
+void handle_wheel_js(){
+  long len = sizeof(JS_WHEEL);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.sendHeader("Content-Encoding", "gzip");
-  server.send_P(200, "text/javascript", JS_MAIN ,len);
+  server.send_P(200, "text/javascript", JS_WHEEL ,len);
+  yield();
+}
+
+void handle_settings_js(){
+  long len = sizeof(JS_SETTINGS);
+  //todo for dev only
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Content-Encoding", "gzip");
+  server.send_P(200, "text/javascript", JS_SETTINGS ,len);
+  yield();
+}
+
+void handle_presets_js(){
+  long len = sizeof(JS_PRESETS);
+  //todo for dev only
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Content-Encoding", "gzip");
+  server.send_P(200, "text/javascript", JS_PRESETS ,len);
+  yield();
+}
+
+void handle_toastify_js(){
+  long len = sizeof(JS_TOASTIFY);
+  //todo for dev only
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Content-Encoding", "gzip");
+  server.send_P(200, "text/javascript", JS_TOASTIFY ,len);
   yield();
 }
 
@@ -368,7 +400,7 @@ void handle_rest_js(){
 }
 
 
-void handle_skeleton(){
+void handle_skeleton_css(){
   long len = sizeof(CSS_SKELETON);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -377,7 +409,16 @@ void handle_skeleton(){
   yield();
 }
 
-void handle_normalize(){
+void handle_toastify_css(){
+  long len = sizeof(CSS_TOASTIFY);
+  //todo for dev only
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Content-Encoding", "gzip");
+  server.send_P(200, "text/css", CSS_TOASTIFY ,len);
+  yield();
+}
+
+void handle_normalize_css(){
   long len = sizeof(CSS_NORMALIZE);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -386,7 +427,7 @@ void handle_normalize(){
   yield();
 }
 
-void handle_style(){
+void handle_style_css(){
   long len = sizeof(CSS_STYLE);
   //todo for dev only
   server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -430,15 +471,19 @@ void setupServer(){
   }
   server.on("/", handle_root);
   server.on("/settings", handle_settings);
-  server.on("/presets", handle_presets);
-  server.on("/env.js", handle_env);
-  server.on("/iro.js", handle_iro);
-  server.on("/main.js", handle_main_js);
+  server.on("/wheel", handle_wheel);
+  server.on("/env.js", handle_env_js);
+  server.on("/iro.js", handle_iro_js);
+  server.on("/wheel.js", handle_wheel_js);
+  server.on("/presets.js", handle_presets_js);
+  server.on("/settings.js", handle_settings_js);
   server.on("/rest.js", handle_rest_js);
-  server.on("/ee3.js", handle_ee3);
-  server.on("/style.css", handle_style);
-  server.on("/skeleton.css", handle_skeleton);
-  server.on("/normalize.css", handle_normalize);
+  server.on("/ee3.js", handle_ee3_js);
+  server.on("/toastify.js", handle_toastify_js);
+  server.on("/toastify.css", handle_toastify_css);  
+  server.on("/style.css", handle_style_css);
+  server.on("/skeleton.css", handle_skeleton_css);
+  server.on("/normalize.css", handle_normalize_css);
   server.on("/api/v1/color", rest_color);
   server.on("/api/v1/mode", rest_mode);
   server.on("/api/v1/settings", rest_settings);
@@ -451,32 +496,51 @@ void setupServer(){
 
 
 void setupWifi(){
-  if(strlen(staticData.ssid) > 0 && strlen(staticData.password) > 0){
-    WiFi.begin(staticData.ssid, staticData.password);
+  char* ssid = staticData.ssid;
+  char* pass = staticData.password;
+  if(strlen(SECRET_SSID) > 0 && strlen(SECRET_PASS) > 0) {
+    ssid = SECRET_SSID;
+    pass = SECRET_PASS;
+  }
+  if(strlen(ssid) > 0 && strlen(pass) > 0){
+    WiFi.begin(ssid, pass);
     Serial.println("Connecting to WIFI");
-    Serial.print("staticData.ssid ");
-    Serial.println(staticData.ssid);
-    Serial.print("staticData.password ");
-    Serial.println(staticData.password);
+    Serial.print("ssid ");
+    Serial.println(ssid);
+    Serial.print("password ");
+    Serial.println(pass);
     // Wait for connection
     boolean connecting = true;
     while(connecting){  
+      // yellow blue
+      if(millis()% 1000 < 500){
+        setColor(255,255,0);
+      } else {
+        setColor(0,0,0);
+      }
+      mainUpdate();
       if(WiFi.status() == WL_CONNECTED){
         connecting = false;
         Serial.println("WIFI Connected ");
+        setColor(0,255,0);
+        mainUpdate();
+        delay(400);
+        setColor(0,0,0);
       } else if(WiFi.status() == WL_NO_SSID_AVAIL){
         connecting = false;
         Serial.println("Connection failed");
         Serial.println("SSID could not be reached");
+        setColor(255,0,0);
       } else if(WiFi.status() == WL_CONNECT_FAILED){
         connecting = false;
         Serial.println("Connection failed");
+        setColor(255,0,0);
       } else if(WiFi.status() == WL_WRONG_PASSWORD){
         connecting = false;
         Serial.println("Connection failed");
         Serial.println("Wrong password");
+        setColor(255,0,0);
       }
-      yield();
     }
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
@@ -496,12 +560,19 @@ void setupAccessPoint(){
     Serial.print("Access Point \"");
     Serial.print(apssid);
     Serial.println("\" started");
-
+    Serial.print("Password: ");
+    Serial.println(appassword);
     Serial.print("IP address:\t");
     Serial.println(WiFi.softAPIP());         // Send the IP address of the ESP8266 to the computer
     
     while(connecting){
       mainUpdate();
+      // blink blue
+      if(millis()% 1000 < 500){
+        setColor(0,0,255);
+      } else {
+        setColor(0,0,0);
+      }
     }
     setupWifi();
 }

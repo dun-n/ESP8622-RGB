@@ -1,3 +1,5 @@
 # ESP8266-RGB
 
-an ESP8366 based RGB LED controller
+An ESP8366 based RGB strip controller
+
+

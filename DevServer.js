@@ -3,21 +3,26 @@ const app = express();
 const port = 3000;
 const fs = require('fs')
 
-app.get('/', (req, res) => {
-    res.sendfile(  './src/web-interface/main.html');
+app.get('/wheel', (req, res) => {
+    res.sendfile(  './src/web-interface/wheel.html');
 });
 
 app.get('/settings', (req, res) => {
     res.sendfile(  './src/web-interface/settings.html');
 });
 
-app.get('/presets', (req, res) => {
+app.get('/', (req, res) => {
     res.sendfile(  './src/web-interface/presets.html');
 });
 
 app.get('/connect', (req, res) => {
     res.sendfile('./src/web-interface/connect.html');
 });
+
+app.get('/toastify.js', (req, res) => {
+    res.sendfile("./src/web-interface/toastify.js");
+});
+
 
 app.get('/env.js', (req, res) => {
   res.sendfile("./DevENV.js");
@@ -27,8 +32,16 @@ app.get('/iro.js', (req, res) => {
   res.sendfile("./src/web-interface/iro.js")
 });
 
-app.get('/main.js', (req, res) => {
-  res.sendfile("./src/web-interface/main.js")
+app.get('/wheel.js', (req, res) => {
+  res.sendfile("./src/web-interface/wheel.js")
+});
+
+app.get('/settings.js', (req, res) => {
+    res.sendfile("./src/web-interface/settings.js")
+});
+
+app.get('/presets.js', (req, res) => {
+    res.sendfile("./src/web-interface/presets.js")
 });
 
 app.get('/rest.js', (req, res) => {
@@ -38,6 +51,11 @@ app.get('/rest.js', (req, res) => {
 app.get('/ee3.js', (req, res) => {
   res.sendfile("./src/web-interface/ee3.js")
 });
+
+app.get('/toastify.css', (req, res) => {
+    res.sendfile("./src/web-interface/toastify.css")
+});
+
 
 app.get('/style.css', (req, res) => {
     res.sendfile("./src/web-interface/style.css")

@@ -196,6 +196,7 @@ input.error {
 
 .nav-link {
     text-decoration: none;
+    padding-right: 10px;
 }
 
 .nav-div {
@@ -216,6 +217,27 @@ input.error {
 
 .container {
     min-width: 200px;
+}
+
+.toast-success {
+    background: #6ab46a;
+    color: #FFFFFF;
+}
+
+.toast-error {
+    background: #af5555;
+    color: #FFFFFF;
+}
+
+.toast-info {
+    background: #5092b0;
+    color: #FFFFFF;
+}
+
+.undo-btn {
+    background: #FFFFFF;
+    padding: 0px 10px;
+    margin-left: 30px;
 }
 
 /* Larger than tablet */

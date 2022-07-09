@@ -6,6 +6,7 @@
     <title>Presets</title>
     <link rel="stylesheet" href="/normalize.css" />
     <link rel="stylesheet" href="/skeleton.css" />
+    <link rel="stylesheet" href="/toastify.css" />
     <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -13,15 +14,6 @@
         <div class="row" >
             <div class="twelve columns pt-15">
                 <a href="/" class="nav-link">
-                    <div class="nav-div">
-                        <svg style="top: 7px; left: 9px; position: relative;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48"><g>
-                            <path opacity="0.8" fill="#43A6DD" d="M24,31c-8.271,0-15-6.729-15-15S15.729,1,24,1s15,6.729,15,15S32.271,31,24,31z" id="id_101"></path>
-                            <path opacity="0.8" fill="#E86C60" d="M16,47C7.729,47,1,40.271,1,32s6.729-15,15-15s15,6.729,15,15S24.271,47,16,47z" id="id_102"></path>
-                            <path opacity="0.8" fill="#3bdb66" d="M32,47c-8.271,0-15-6.729-15-15s6.729-15,15-15s15,6.729,15,15S40.271,47,32,47z" id="id_103"></path>
-                        </g></svg>
-                    </div>
-                </a>
-                <a href="/presets" class="nav-link">
                     <div class="nav-div active">
                         <svg style="top: 7px; left: 10px; position: relative;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48"><g>
                             <path fill="#E86C60" d="M27.985,43.962c-0.125,0-0.25-0.023-0.372-0.072c-0.455-0.182-0.71-0.667-0.604-1.146l6.229-27.902
@@ -35,6 +27,15 @@
                             <circle fill="#B3B3B3" cx="19" cy="40" r="3" id="id_105"></circle>
                         </g>
                         </svg>
+                    </div>
+                </a>
+                <a href="/wheel" class="nav-link">
+                    <div class="nav-div">
+                        <svg style="top: 7px; left: 9px; position: relative;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48"><g>
+                            <path opacity="0.8" fill="#43A6DD" d="M24,31c-8.271,0-15-6.729-15-15S15.729,1,24,1s15,6.729,15,15S32.271,31,24,31z" id="id_101"></path>
+                            <path opacity="0.8" fill="#E86C60" d="M16,47C7.729,47,1,40.271,1,32s6.729-15,15-15s15,6.729,15,15S24.271,47,16,47z" id="id_102"></path>
+                            <path opacity="0.8" fill="#3bdb66" d="M32,47c-8.271,0-15-6.729-15-15s6.729-15,15-15s15,6.729,15,15S40.271,47,32,47z" id="id_103"></path>
+                        </g></svg>
                     </div>
                 </a>
                 <a href="/settings" class="nav-link right">
@@ -63,10 +64,13 @@
                 </div>
                 <div class="mode-item">
                     <label for="duration" class="big">Duration (ms)</label>
-                    <input type="number" id="duration" min="10" max="65535">
+                    <input type="number" id="duration" min="10" max="65535" style="width: 100%">
                 </div>
                 <div class="mode-item">
                     <button class="button-primary" id="start-btn">Start</button>
+                </div>
+                <div class="mode-item">
+                    <button class="button-primary" id="off-btn">Off</button>
                 </div>
             </div>
             <div id="mode-description"></div>
@@ -123,250 +127,9 @@
         </div>
     </div>
     <script src="/env.js"></script>
-    <script src="rest.js"></script>
-    <script src="ee3.js"></script>
-    <script>
-        const PRESET_TEMPLATE = document.getElementById('preset-template')
-        const PRESET_CONTAINER_TEMPLATE  = document.getElementById('preset-container');
-        const PRESET_CONTAINER_CONTAINER = document.getElementById('preset-container-container');
-
-        class Preset extends EventEmitter3{
-            static nextId = 0;
-            id;
-            element;
-            palette;
-            rows = [];
-
-            constructor(pal) {
-                super();
-                this.palette = pal;
-                this.id= Preset.nextId++;
-                this.createDOMElement();
-            }
-
-            createDOMElement(){
-                const newPreset = PRESET_TEMPLATE.cloneNode(true);
-                newPreset.id = 'preset-' + this.id;
-                this.element = newPreset;
-                newPreset.addEventListener('click', ()=>{
-                   this.emit('select', this);
-                });
-                newPreset.querySelector('.edit-btn').addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    window.location.href = '/?palette=' + this.palette.palette;
-                })
-                newPreset.querySelector('.delete-button').addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    const palette = this.palette.palette;
-                    const name = '';
-                    const colors = [];
-                    const data = {
-                        name,
-                        palette,
-                        colors
-                    }
-                    const rest = new RestUtils();
-                    rest.palette((res)=>{
-                       this.palette = res;
-                       this.render();
-                    }, 'POST', data);
-                })
-                this.render();
-                return newPreset;
-            }
-
-            render(){
-                for(const row of this.rows){
-                    row.remove();
-                }
-                this.element.querySelector('.bank-number .num').innerText = (this.palette.palette + 1) + '';
-                this.element.querySelector('.bank-name').innerText = this.palette.name;
-                if(this.palette && this.palette.colors && this.palette.colors.length){
-                    let row = this.newRow();
-                    for(const color of this.palette.colors){
-                        if(row.children.length == 4){
-                            row = this.newRow();
-                        }
-                        let newColor = this.element.querySelector('.color-template').cloneNode(true);
-                        newColor.classList.remove('color-template');
-                        newColor.querySelector('.preset-color').style.background = `rgb(${color.red},${color.green},${color.blue})`;
-                        row.appendChild(newColor);
-                    }
-                } else {
-                    this.element.querySelector('.empty-msg').style.display = 'block';
-                }
-            }
-
-            newRow(){
-                console.log("new Row")
-                const row = this.element.querySelector('.color-row-template').cloneNode(true);
-                row.classList.remove('color-row-template');
-                row.id = 'color-row-' +Preset.nextId++;
-                this.element.querySelector('.color-row-container').appendChild(row);
-                this.rows.push(row);
-                return row;
-            }
-
-            removeDomElement(){
-                this.element.remove();
-            }
-
-            select(){
-                this.element.querySelector('.preset-bank').classList.add('selected');
-            }
-
-            unselect(){
-                this.element.querySelector('.preset-bank').classList.remove('selected');
-            }
-
-        }
-
-        class Presets {
-            static nextId = 0;
-            selected;
-            rows = [];
-            palettes = [];
-            selectedElementContainer= document.getElementById('selected-palette')
-            startButton = document.getElementById('start-btn');
-            rest = new RestUtils();
-            modeSelect = new ModeSelect();
-            constructor() {
-                this.startButton.addEventListener('click', ()=> this.start());
-                this.rest.palettes((pals)=>{
-                    this.render(pals);
-                })
-            }
-
-            render(pals){
-                let row = this.newRow();
-                for (const pal of pals){
-                    if(row.children.length == 2){
-                        row = this.newRow();
-                    }
-                    const ps = new Preset(pal);
-                    this.palettes.push(ps);
-                    ps.on('select',(preset)=>{
-                        if(this.selected){
-                            this.selected.unselect();
-                        }
-                        this.selected = preset;
-                        this.selected.select();
-                        this.updateSelected();
-                    });
-                    row.appendChild(ps.element);
-                }
-                if(this.palettes[0]){
-                    this.palettes[0].select();
-                    this.selected = this.palettes[0];
-                    this.updateSelected();
-                }
-            }
-
-            updateSelected(){
-                if(this.selectedElement){
-                    this.selectedElement.remove();
-                }
-                this.selectedElement = this.selected.element.cloneNode(true);
-                this.selectedElement.querySelector('.edit-btn').remove();
-                this.selectedElement.querySelector('.delete-button').remove();
-                this.selectedElement.classList.remove('six');
-                this.selectedElement.classList.add('twelve');
-                this.selectedElementContainer.appendChild(this.selectedElement)
-            }
-
-            newRow(){
-                const row = PRESET_CONTAINER_TEMPLATE.cloneNode(true);
-                row.id = 'ps-row-' + Presets.nextId++;
-                PRESET_CONTAINER_CONTAINER.appendChild(row);
-                this.rows.push(row);
-                return row;
-            }
-
-            start(){
-                const data = {
-                    mode: this.modeSelect.getMode(),
-                    palette: this.selected.palette.palette,
-                    duration: this.modeSelect.getDuration()
-                }
-                this.rest.start((res)=>{
-                    console.log(res)
-                }, data)
-            }
-
-        }
-
-        class ModeSelect extends EventEmitter3{
-            modes = [
-                {
-                    value: 0,
-                    name: 'Static',
-                    description:
-                        `Static mode holds a color for the duration than changes to the next color in the palette.`
-                },
-                {
-                    value: 1,
-                    name: 'Pulse',
-                    description:
-                        `Pulse Mode will fades a color in and then fade it out over the duration. Then it does the same for the next color in the palette.`
-                },
-                {
-                    value: 2,
-                    name: 'Fade',
-                    description:
-                        `Fade mode Will over the duration fade from one color to the next color in the palette.`
-                },
-
-            ];
-            modeDescription = document.getElementById('mode-description');
-            modeSelect = document.getElementById('mode-select');
-            mode = 0;
-            duration = document.getElementById('duration');
-            strobeWarning = document.getElementById('strobe-warning');
-            constructor() {
-                super();
-                for (const mode of this.modes){
-                    const option = document.createElement('option');
-                    option.innerText = mode.name;
-                    option.value = mode.value;
-                    this.modeSelect.appendChild(option);
-                }
-                this.updateModeDescription();
-                this.modeSelect.addEventListener('change', ()=>{
-                    this.mode = this.modeSelect.value;
-                    this.updateModeDescription();
-                });
-                this.duration.value = 1000;
-                this.duration.addEventListener('change', ()=>{
-                    if (this.duration.value < 10){
-                        this.duration.value = 10;
-                    } else if(this.duration.value > 65535){
-                      this.duration.value = 65535;
-                    }
-                    if(this.duration.value < 400){
-                        this.strobeWarning.style.display = 'block';
-                    } else {
-                        this.strobeWarning.style.display = 'None';
-                    }
-                })
-            }
-
-            updateModeDescription(){
-                let modeObj = this.modes.find(m => m.value == this.mode);
-                this.modeDescription.innerText = modeObj.description;
-            }
-
-            getMode(){
-                return this.mode;
-            }
-
-            getDuration(){
-                return this.duration.value;
-            }
-
-        }
-
-        const p = new Presets();
-
-    </script>
+    <script src="/ee3.js"></script>
+    <script src="/toastify.js"></script>
+    <script src="/rest.js"></script>
+    <script src="/presets.js"></script>
 </body>
 </html>

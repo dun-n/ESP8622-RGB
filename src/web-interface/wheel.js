@@ -285,29 +285,69 @@ class Palette {
     clear(){
         const removed = this.colors.splice(0, this.colors.length);
         this.renderColors(removed);
+        const html = `Cleared <button class="undo-btn">Undo</button>`
+        const elm = document.createElement('span');
+        elm.innerHTML = html;
+        const toast = Toastify({
+            node: elm,
+            //duration: 3000,
+            close: true,
+            gravity: "bottom", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            className: 'toast-info'
+        }).showToast();
+        elm.querySelector('.undo-btn').addEventListener('click', ()=>{
+            this.colors = removed;
+            this.renderColors();
+            if(toast){
+                toast.hideToast();
+            }
+        })
+
     }
 
     savePalette() {
         const num = this.bankNumber.value;
-        const palette = ((typeof num === 'string')?parseInt(num):num) - 1;
-        const name = this.paletteName.value;
-        const colors = [];
-        for(const color of this.colors){
-            colors.push({
-                red: color.rgb.r,
-                green: color.rgb.g,
-                blue: color.rgb.b,
-            })
+        if(num) {
+            const palette = ((typeof num === 'string') ? parseInt(num) : num) - 1;
+            const name = this.paletteName.value;
+            const colors = [];
+            for (const color of this.colors) {
+                colors.push({
+                    red: color.rgb.r,
+                    green: color.rgb.g,
+                    blue: color.rgb.b,
+                })
+            }
+            const data = {
+                name,
+                palette,
+                colors
+            }
+            const rest = new RestUtils();
+            rest.palette((res) => {
+                Toastify({
+                    text: "Saved",
+                    duration: 3000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    stopOnFocus: true, // Prevents dismissing of toast on hover
+                    className: 'toast-success'
+                }).showToast();
+            }, 'POST', data);
+        } else {
+            Toastify({
+                text: "Palette Bank Number Required",
+                duration: 3000,
+                close: true,
+                gravity: "bottom", // `top` or `bottom`
+                position: "right", // `left`, `center` or `right`
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                className: 'toast-error'
+            }).showToast();
         }
-        const data = {
-            name,
-            palette,
-            colors
-        }
-        const rest = new RestUtils();
-        rest.palette((res)=>{
-            console.log(res);
-        }, 'POST', data);
     }
 
     init() {
@@ -328,7 +368,7 @@ class Palette {
                                     g: c.blue,
                                     b: c.green
                                 },
-                                hexString: `#${c.red.toString(16)}${c.green.toString(16)}${c.blue.toString(16)}`
+                                hexString: `#${c.red.toString(16).padStart(2,'0')}${c.green.toString(16).padStart(2,'0')}${c.blue.toString(16).padStart(2,'0')}`
                             }
                             palette.addColor(color);
                         }
@@ -338,3 +378,12 @@ class Palette {
         }
     }
 }
+
+const picker = new Picker();
+const palette = new Palette();
+
+picker.on('change', (color)=>{
+    if( palette.currentColor ){
+        palette.currentColor.update(color);
+    }
+})

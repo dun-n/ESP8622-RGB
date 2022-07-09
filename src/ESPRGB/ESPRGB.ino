@@ -33,15 +33,11 @@ struct StaticData {
   uint16_t bluePin = 13;
   uint16_t greenPin = 14;
   Palette palettes[MAX_PALETTES];
+  int RGBmode = -1;
+  uint16_t duration = 5000;
+  int currentPaletteNumber = -1;
 } staticData;
 
-
-
-// 0 - static color
-// 1 - color wheel
-int16_t RGBmode = 0;
-uint16_t duration = 5000;
-uint16_t currentPaletteNumber = 0;
 
 
 void mainUpdate(){
@@ -59,7 +55,7 @@ void setup() {
   initLEDS();
   setupServer();
   setupWifi();
-  setColor(255,255,255);
+  initMode();
 }
 void loop() {
   //Fading the LED

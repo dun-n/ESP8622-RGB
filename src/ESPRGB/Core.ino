@@ -17,6 +17,9 @@ void initEEPROM(boolean fource){
     uint16_t greenPin = 14;
     uint16_t numberOfPresets = 0;
     Palette palettes[16];
+    int RGBmode = -1;
+    uint16_t duration = 5000;
+    int currentPaletteNumber = -1;
   } staticDataTemp;
   uint addr = 0;
   EEPROM.get(addr,staticDataTemp);

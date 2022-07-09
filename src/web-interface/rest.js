@@ -3,9 +3,12 @@ class RestUtils {
 
     settings(callback, type, body){
         const ajax = new XMLHttpRequest();
+        const self = this;
         ajax.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 callback(JSON.parse(this.response));
+            } else if (this.readyState == 4) {
+                self.error();
             }
         };
         if(type === 'POST' && typeof body != 'string'){
@@ -18,9 +21,12 @@ class RestUtils {
 
     palettes(callback){
         const ajax = new XMLHttpRequest();
+        const self = this;
         ajax.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 callback(JSON.parse(this.response));
+            } else if (this.readyState == 4) {
+                self.error();
             }
         };
         ajax.open('GET', NODE_ENDPOINT+API_PATH+"palettes",true);
@@ -29,9 +35,12 @@ class RestUtils {
 
     palette(callback, type, params){
         const ajax = new XMLHttpRequest();
+        const self = this;
         ajax.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 callback(JSON.parse(this.response));
+            } else if (this.readyState == 4) {
+                self.error();
             }
         };
         let body;
@@ -43,7 +52,7 @@ class RestUtils {
             }
         }
         let query = NODE_ENDPOINT+API_PATH+"palette";
-        if(type === 'GET'){
+        if(type === 'GET' && params){
             query += '/' + params;
         }
         ajax.open(type, query,true);
@@ -59,21 +68,43 @@ class RestUtils {
         return decodeURIComponent(results[2].replace(/\+/g, ' '));
     }
 
-    start(callback, params) {
+    mode(callback, type, params) {
         const ajax = new XMLHttpRequest();
+        const self = this;
         ajax.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 callback(JSON.parse(this.response));
+            } else if (this.readyState == 4) {
+                self.error();
             }
         };
         let body;
-        if(typeof body != 'string'){
-            body = JSON.stringify(params);
-        } else {
-            body = params;
+        if(type === 'POST'){
+            if(typeof body != 'string'){
+                body = JSON.stringify(params);
+            } else {
+                body = params;
+            }
         }
-        ajax.open('POST', NODE_ENDPOINT+API_PATH+"mode",true);
+        let query = NODE_ENDPOINT+API_PATH+"mode";
+        if(type === 'GET' && params){
+            query += '/' + params;
+        }
+        ajax.open(type, query,true);
         ajax.send(body);
     }
+
+    error(){
+        Toastify({
+            text: "Rest Error",
+            duration: 3000,
+            close: true,
+            gravity: "bottom", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            className: 'toast-error'
+        }).showToast();
+    }
+
 }
 

@@ -6,6 +6,7 @@
     <title>Settings</title>
     <link rel="stylesheet" href="/normalize.css" />
     <link rel="stylesheet" href="/skeleton.css" />
+    <link rel="stylesheet" href="/toastify.css" />
     <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -13,15 +14,6 @@
         <div class="row" >
             <div class="twelve columns pt-15">
                 <a href="/" class="nav-link">
-                    <div class="nav-div">
-                        <svg style="top: 7px; left: 9px; position: relative;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48"><g>
-                            <path opacity="0.8" fill="#43A6DD" d="M24,31c-8.271,0-15-6.729-15-15S15.729,1,24,1s15,6.729,15,15S32.271,31,24,31z" id="id_101"></path>
-                            <path opacity="0.8" fill="#E86C60" d="M16,47C7.729,47,1,40.271,1,32s6.729-15,15-15s15,6.729,15,15S24.271,47,16,47z" id="id_102"></path>
-                            <path opacity="0.8" fill="#3bdb66" d="M32,47c-8.271,0-15-6.729-15-15s6.729-15,15-15s15,6.729,15,15S40.271,47,32,47z" id="id_103"></path>
-                        </g></svg>
-                    </div>
-                </a>
-                <a href="/presets" class="nav-link">
                     <div class="nav-div">
                         <svg style="top: 7px; left: 10px; position: relative;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48"><g>
                             <path fill="#E86C60" d="M27.985,43.962c-0.125,0-0.25-0.023-0.372-0.072c-0.455-0.182-0.71-0.667-0.604-1.146l6.229-27.902
@@ -37,6 +29,15 @@
                         </svg>
                     </div>
                 </a>
+                <a href="/wheel" class="nav-link">
+                    <div class="nav-div">
+                        <svg style="top: 7px; left: 9px; position: relative;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48"><g>
+                            <path opacity="0.8" fill="#43A6DD" d="M24,31c-8.271,0-15-6.729-15-15S15.729,1,24,1s15,6.729,15,15S32.271,31,24,31z" id="id_101"></path>
+                            <path opacity="0.8" fill="#E86C60" d="M16,47C7.729,47,1,40.271,1,32s6.729-15,15-15s15,6.729,15,15S24.271,47,16,47z" id="id_102"></path>
+                            <path opacity="0.8" fill="#3bdb66" d="M32,47c-8.271,0-15-6.729-15-15s6.729-15,15-15s15,6.729,15,15S40.271,47,32,47z" id="id_103"></path>
+                        </g></svg>
+                    </div>
+                </a>
                 <a href="/settings" class="nav-link right">
                     <div class="nav-div active">
                         <svg style="height: 50px; width: 50px; top: 7px; left: 9px; position: relative;" enable-background="new 0 0 128 128" height="128px" id="Layer_1"
@@ -48,7 +49,11 @@
                 </a>
             </div>
         </div>
-        <h1>Settings</h1>
+        <div class="pt-10">
+            <div>
+                <label class="big">Settings</label>
+            </div>
+        </div>
         <label for="node-name">Node Name:</label>
         <div>
             <input class="text" id="node-name" maxlength="15">
@@ -70,58 +75,8 @@
         </div>
     </div>
     <script src="/env.js"></script>
+    <script src="/toastify.js"></script>
     <script src="/rest.js"></script>
-    <script>
-
-        class Settings {
-            nodeName = document.getElementById('node-name');
-            redPin = document.getElementById('red-pin');
-            greenPin = document.getElementById('green-pin');
-            bluePin = document.getElementById('blue-pin');
-            restUtils = new RestUtils()
-            saveButton = document.getElementById('save');
-            constructor() {
-                this.redPin.addEventListener('change', (event) => this.onChange(event));
-                this.greenPin.addEventListener('change', (event) => this.onChange(event));
-                this.bluePin.addEventListener('change', (event) => this.onChange(event));
-                this.saveButton.addEventListener('click', () => this.save());
-                setTimeout(()=>{
-                    this.restUtils.settings((res) => this.callback(res),'GET')
-                });
-            }
-
-            onChange(event){
-                const elm = event.target;
-                if(elm.value < 0){
-                    elm.value = 0;
-                } else if(elm.value > 16) {
-                    elm.value = 16
-                }
-            }
-
-            callback(response){
-                if(response) {
-                    this.nodeName.value = response.nodeName
-                    this.redPin.value = response.redPin;
-                    this.greenPin.value = response.greenPin;
-                    this.bluePin.value = response.bluePin;
-                }
-            }
-
-            save(){
-                const body =
-                    {
-                        nodeName: this.nodeName.value,
-                        redPin: this.redPin.value,
-                        greenPin: this.greenPin.value,
-                        bluePin: this.bluePin.value
-                    };
-                this.restUtils.settings((res) => this.callback(res),'POST', body)
-            }
-
-        }
-
-        const settings = new Settings();
-    </script>
+    <script src="/settings.js"></script>
 </body>
 </html>
