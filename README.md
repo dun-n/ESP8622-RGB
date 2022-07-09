@@ -57,7 +57,9 @@ runs a node server on `http://localhost:3000` and redirects REST calls to your F
 your network. you can set the IP of your feather HUZZAH in the DevENV.html file.
 
 `npm install html-minifier -g`
+
 `npm install uglifycss -g`
+
 `npm install uglifyjs -g`
 
 then build with `bash build.sh`
