@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #build webpage.h
 #this involves gzip-ing the files and building byte arrays of them that
 # can be stored in PROGMEM

@@ -112,12 +112,7 @@ void rest_settings(){
       staticData.bluePin = input["bluePin"];
     }
     if(input.containsKey("nodeName")){
-      //Serial.println("GOT NODENAME");
-      //memcpy((char *)input["nodeName"],&staticData.nodeName,64);
       const char* nodeName = input["nodeName"];
-      //Serial.println(nodeName);
-      //Serial.println(strlen(nodeName));
-      //strcpy((char *)staticData.nodeName,(char *)nodeName);
       uint16_t i;
       for(i = 0; i < 15 && i < strlen(nodeName); i++){
         staticData.nodeName[i] = nodeName[i];
@@ -512,7 +507,7 @@ void setupWifi(){
     // Wait for connection
     boolean connecting = true;
     while(connecting){  
-      // yellow blue
+      // blink yellow
       if(millis()% 1000 < 500){
         setColor(255,255,0);
       } else {
@@ -522,6 +517,7 @@ void setupWifi(){
       if(WiFi.status() == WL_CONNECTED){
         connecting = false;
         Serial.println("WIFI Connected ");
+        // green
         setColor(0,255,0);
         mainUpdate();
         delay(400);

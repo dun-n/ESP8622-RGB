@@ -170,8 +170,8 @@ class Picker extends EventEmitter3{
         const color = this.colorPicker.color;
         const body = {
             r: color.red,
-            g: color.blue,
-            b: color.green,
+            b: color.blue,
+            g: color.green,
         };
         ajax.open("POST", NODE_ENDPOINT+API_PATH+"color",true);
         ajax.send(JSON.stringify(body));

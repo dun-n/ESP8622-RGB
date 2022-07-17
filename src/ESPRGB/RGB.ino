@@ -8,20 +8,6 @@ void setColor(uint16_t r, uint16_t g, uint16_t b){
   green = g;
 }
 
-
-    /*struct Color3B {
-      uint16_t red;
-      uint16_t green;
-      uint16_t blue;
-    } CurrentColor;
-    
-    struct Palette{ 
-      char paletteName[16] = "";
-      uint16_t numberOfColors = 0;
-      Color3B colors[MAX_COLORS];
-    } currentPalette;*/
-
-
 unsigned long last_update = 0;
 Color3B* CurrColorPtr = NULL;
 uint16_t colorIndex = 0;
